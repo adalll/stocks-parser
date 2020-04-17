@@ -44,7 +44,7 @@ const stockScraper = async (stockURL, stockId) => {
             const oneYearChangeSelector = '#leftColumn > div.clear.overviewDataTable.overviewDataTableWithTooltip > div:nth-child(13) > span.float_lang_base_2.bold';
             const nextEarningsDateSelector = '#leftColumn > div.clear.overviewDataTable.overviewDataTableWithTooltip > div:nth-child(15) > span.float_lang_base_2.bold > a';
             const industrySelector = '#leftColumn > div.companyProfileHeader > div:nth-child(1) > a';
-
+            const sectorSelector = '#leftColumn > div.companyProfileHeader > div:nth-child(2) > a';
 
             const stockName = document.querySelector(stockNameSelector) ? document.querySelector(stockNameSelector).innerText : '';
             const ticker = stockName.match('\\((.*)\\)');
@@ -58,6 +58,8 @@ const stockScraper = async (stockURL, stockId) => {
             const oneYearChange = document.querySelector(oneYearChangeSelector) ? document.querySelector(oneYearChangeSelector).innerText : '';
             const nextEarningsDate = document.querySelector(nextEarningsDateSelector) ? document.querySelector(nextEarningsDateSelector).innerText : '';
             const industry = document.querySelector(industrySelector) ? document.querySelector(industrySelector).innerText : '';
+            const sector = document.querySelector(sectorSelector) ? document.querySelector(sectorSelector).innerText : '';
+
 
             return {
                 ticker: ticker ? ticker[1] : '',
@@ -71,6 +73,7 @@ const stockScraper = async (stockURL, stockId) => {
                 oneYearChange: oneYearChange,
                 nextEarningsDate: nextEarningsDate,
                 industry: industry,
+                sector: sector,
                 lastUpdated: Date.now(),
             };
         }, stockURL, stockId);
