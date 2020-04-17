@@ -43,17 +43,21 @@ const stockScraper = async (stockURL, stockId) => {
             const marketCapSelector = '#leftColumn > div.clear.overviewDataTable.overviewDataTableWithTooltip > div:nth-child(8) > span.float_lang_base_2.bold';
             const oneYearChangeSelector = '#leftColumn > div.clear.overviewDataTable.overviewDataTableWithTooltip > div:nth-child(13) > span.float_lang_base_2.bold';
             const nextEarningsDateSelector = '#leftColumn > div.clear.overviewDataTable.overviewDataTableWithTooltip > div:nth-child(15) > span.float_lang_base_2.bold > a';
+            const industrySelector = '#leftColumn > div.companyProfileHeader > div:nth-child(1) > a';
+
 
             const stockName = document.querySelector(stockNameSelector) ? document.querySelector(stockNameSelector).innerText : '';
             const ticker = stockName.match('\\((.*)\\)');
             const company = stockName.replace(/ \(.*\)/g , "");
 
-            const currentPrice = document.querySelector(currentPriceSelector) ? document.querySelector(currentPriceSelector).innerText : '';
+            const currentPrice = document.querySelector(currentPriceSelector) ? document.querySelector(currentPriceSelector)
+                .innerText.replace(/,/g , "") : '';
             const peRatio = document.querySelector(PERatioSelector) ? document.querySelector(PERatioSelector).innerText : '';
             const eps = document.querySelector(epsSelector) ? document.querySelector(epsSelector).innerText : '';
             const marketCap = document.querySelector(marketCapSelector) ? document.querySelector(marketCapSelector).innerText : '';
             const oneYearChange = document.querySelector(oneYearChangeSelector) ? document.querySelector(oneYearChangeSelector).innerText : '';
             const nextEarningsDate = document.querySelector(nextEarningsDateSelector) ? document.querySelector(nextEarningsDateSelector).innerText : '';
+            const industry = document.querySelector(industrySelector) ? document.querySelector(industrySelector).innerText : '';
 
             return {
                 ticker: ticker ? ticker[1] : '',
@@ -66,6 +70,7 @@ const stockScraper = async (stockURL, stockId) => {
                 marketCap: marketCap,
                 oneYearChange: oneYearChange,
                 nextEarningsDate: nextEarningsDate,
+                industry: industry,
                 lastUpdated: Date.now(),
             };
         }, stockURL, stockId);
@@ -86,17 +91,16 @@ const stockScraper = async (stockURL, stockId) => {
             const annualizedPayoutSelector = '#stock-dividend-data > section > div:nth-child(2) > p';
             const payoutRatioSelector = '#stock-dividend-data > section > div:nth-child(4) > p';
             const dividendGrowthSelector = '#stock-dividend-data > section > div:nth-child(5) > p';
-            const industrySelector = 'body > main > section.quickfacts.t-mb-8 > div.t-flex.t-item-center.t-flex-col.md\\:t-flex-row.n-ticker-quickfacts > div.industry.t-flex-col.t-flex.t-mt-2 > p.t-uppercase.t-text-black.t-text-tiny.t-font-bold';
+
 
 
             const dividendYield = document.querySelector(dividendYieldSelector) ? document.querySelector(dividendYieldSelector).innerText : '';
             const annualizedPayout = document.querySelector(annualizedPayoutSelector) ? document.querySelector(annualizedPayoutSelector).innerText : '';
             const payoutRatio = document.querySelector(payoutRatioSelector) ? document.querySelector(payoutRatioSelector).innerText : '';
             const dividendGrowth = document.querySelector(dividendGrowthSelector) ? document.querySelector(dividendGrowthSelector).innerText : '';
-            const industry = document.querySelector(industrySelector) ? document.querySelector(industrySelector).innerText : '';
+
 
             return {
-                industry: industry,
                 dividendYield: dividendYield,
                 annualizedPayout: annualizedPayout,
                 payoutRatio: payoutRatio,
