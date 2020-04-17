@@ -1,10 +1,13 @@
 const URLS = require('./data/URLS');
-const CronJob = require('cron').CronJob;
-const profilesGeneralInfo = require('./generalInfoScraper');
-const saveGeneralInfo = require('./saveGeneralInfo');
-const stockScraper = require('./stockScraper');
-const compareAndSaveProfile = require('./compareAndSaveProfile');
+const MARKET_INDEXES = require('./data/MARKET_INDEXES');
+
 const mongoose = require('mongoose');
+const CronJob = require('cron').CronJob;
+
+const generalInfoScraper = require('./generalInfoScraper');
+const stockScraper = require('./stockScraper');
+const saveGeneralInfo = require('./saveGeneralInfo');
+const compareAndSaveProfile = require('./compareAndSaveProfile');
 
 
 const startTime = Date.now();
@@ -19,18 +22,23 @@ mongoose.connect('mongodb+srv://stockUser:stockUser1617@stocks-qywnv.mongodb.net
 })
     .then(() => {
         console.log('CONNECTED TO MOBGODB OK');
-
         console.log('START PARSING...');
-        profilesGeneralInfo(URLS.investingURL)
+
+        generalInfoScraper(URLS.investingURL, MARKET_INDEXES["S&P500"])
             .then(async (generalInfoObject) => {
+
                 console.log('GENERAL INFO PARSING TIME: ', (Date.now() - startTime) / 1000, 's');
+
                 await saveGeneralInfo(generalInfoObject);
-                for (let i = 0; i < 5/*generalInfoObject.stocksLinks.length*/; i++) {
+
+                for (let i = 0; i < generalInfoObject.companyLinks.length; i++) {
                     startCompanyTime = Date.now();
-                    const profileObject  = await stockScraper(generalInfoObject.stocksLinks[i]);
+                    const profileObject  = await stockScraper(generalInfoObject.companyLinks[i], generalInfoObject.companyIds[i]);
                     await compareAndSaveProfile(profileObject);
                     console.log('LAST COMPANY PARSING & SAVING TIME: ', (Date.now() - startCompanyTime) / 1000, 's');
+                    console.log('TOTAL PARSED: ', i+1);
                 }
+
                 console.log('TOTAL TIME: ', (Date.now() - startTime) / 1000, 's');
             })
             .catch(console.error);
@@ -38,6 +46,15 @@ mongoose.connect('mongodb+srv://stockUser:stockUser1617@stocks-qywnv.mongodb.net
     .catch(() => {
         console.log('CONNECTION TO MOBGODB FAILED');
     }).then(() => mongoose.disconnect);
+
+
+
+
+
+
+
+
+
 
 //const job = new CronJob(`${Math.floor(Math.random() * Math.floor(59))} */6 * * *`, () => {
   /*  profilesGeneralInfo(mobilePageURL)
@@ -51,7 +68,5 @@ mongoose.connect('mongodb+srv://stockUser:stockUser1617@stocks-qywnv.mongodb.net
         .catch(console.error);
 //});
 //job.start();*/
-
-//profilesGeneralInfo(investingURL);
 
 //});

@@ -15,6 +15,14 @@ const profileSchema = new Schema({
         type: String,
         required: true
     },
+    investingCompanyURL: {
+        type: String,
+        required: true
+    },
+    investingCompanyId: {
+        type: Number,
+        required: true
+    },
     currentPrice: {
         type: Number,
         required: true
@@ -40,6 +48,10 @@ const profileSchema = new Schema({
         required: true
     },
 // DIVIDEND.COM DATA
+    industry: {
+        type: String,
+        required: true
+    },
     dividendYield: {
         type: String,
         required: true

@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-const MARKET_INDEXES = require('./data/MARKET_INDEXES');
 
 
 const LAUNCH_PUPPETEER_OPTS = {
@@ -24,69 +23,37 @@ const PAGE_PUPPETEER_OPTS = {
 
 let generalInfoObject = {};
 
-const generalInfo = async investingURL => {
+const generalInfo = async (investingURL, MARKET_INDEX) => {
+
     const browser = await puppeteer.launch(LAUNCH_PUPPETEER_OPTS);
     const page = await browser.newPage();
-
     await page.setDefaultNavigationTimeout(0);
+
     try {
         await page.goto(investingURL, PAGE_PUPPETEER_OPTS);
 
-        //await page.waitForSelector('#PromoteSignUpPopUp > div.right > i', {timeout: 0});
-
         await page.waitForSelector('#stocksFilter', {timeout: 0});
-        await page.select('#stocksFilter', MARKET_INDEXES["S&P500"]).then(()=> {
-        });
-
-        //await page.waitFor(() => document.querySelector('#stocksFilter'));
-        //await page.select('#stocksFilter', 'S&P 500');
-       // await page.waitForNavigation({ waitUntil: 'networkidle2' });
+        await page.select('#stocksFilter', MARKET_INDEX);
         await page.waitFor(3000);
-        //await page.setViewport({ width: 1200, height: 800 });
-        //
-        // let cityLink, profilesLinksArray;
-        // let profilesLinks = [];
-        // let profilesInCities = [];
-        //
 
-        const stocksLinks = await page.evaluate(() => {
-             const stocksLinksSelector = '#cross_rate_markets_stocks_1 > tbody > tr > td > a';
-             return Array.from(document.querySelectorAll(stocksLinksSelector)).map(item => item.href);
+        const companies = await page.evaluate(() => {
+             const companyLinksSelector = '#cross_rate_markets_stocks_1 > tbody > tr > td > a';
+             const companyIdSelector = '#cross_rate_markets_stocks_1 > tbody > tr';
+             return {
+                 companyLinks: Array.from(document.querySelectorAll(companyLinksSelector)).map(item => item.href),
+                 companyIds: Array.from(document.querySelectorAll(companyIdSelector)).map(item => item.id.match(/\d+/)[0]),
+             };
         });
 
-        //console.log(stocksLinks);
-        console.log('LINKS SCRAPPED: ',stocksLinks.length);
+        console.log('LINKS SCRAPPED: ', companies.companyLinks.length);
 
-        //console.log(stocksLinks);
-        //#pair_8193 > td.bold.left.noWrap.elp.plusIconTd > a
-        // for (let i = 0; i < citiesLinks.length; i++){
-        //     cityLink = mobilePageURL + citiesLinks[i];
-        //     await page.goto(cityLink);
-        //     profilesLinksArray = await page.evaluate(() => {
-        //         const cityNameSelector = '#path > span.strong';
-        //         const cityName = document.querySelector(cityNameSelector).innerText;
-        //         return {
-        //             city: cityName,
-        //             profilesLinks: Array.from(document.querySelectorAll('#city-page > div.escort-info.mt0 > div.list-wrapper > div > div.image > a')).map(item => item.pathname)
-        //         }
-        //     });
-        //     for (let i = 0; i < profilesLinksArray.profilesLinks.length; i++) {
-        //         profilesLinks.push(profilesLinksArray.profilesLinks[i]);
-        //     }
-        //     profilesInCities.push({
-        //         city: profilesLinksArray.city,
-        //         amount: profilesLinksArray.profilesLinks.length
-        //     })
-        // }
-        //
-        // let profilesIDs = Array.from(new Set(profilesLinks)).map(item => +item.replace(/(?!(?:\d+$))./g, ''));
-        //
          generalInfoObject = {
              date: Date.now(),
              siteURL: 'https://www.investing.com/',
              siteName: 'Investing.com',
-             stocksLinksQuantity: stocksLinks.length,
-             stocksLinks: stocksLinks
+             companyLinksQuantity: companies.companyLinks.length,
+             companyLinks: companies.companyLinks,
+             companyIds: companies.companyIds
         };
     } catch (err) {
         console.log('СЛУЧИЛАСЬ КАКАЯ-ТО ХУЙНЯ ПРИ СКРАПИНГЕ ГЕНЕРАЛОБЖЕКТ: ', err);

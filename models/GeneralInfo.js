@@ -14,14 +14,18 @@ const generalInfoSchema = new Schema ({
         type: String,
         required: true
     },
-    stocksLinksQuantity: {
+    companyLinksQuantity: {
         type: String,
         required: true
     },
-    stocksLinks: [{
+    companyLinks: [{
         type: String,
         required: true
-    }]
-}, { collection: 'generalData' });
+    }],
+    companyIds: [{
+        type: Number,
+        required: true
+    }],
+});
 
 module.exports = mongoose.model("GeneralInfo", generalInfoSchema);
