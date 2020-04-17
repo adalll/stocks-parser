@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const URLS = require('./data/URLS');
 
 const LAUNCH_PUPPETEER_OPTS = {
-    headless: true,
+    headless: false,
     ignoreHTTPSErrors: true,
     args: [
         '--no-sandbox',
@@ -24,10 +24,8 @@ const stockScraper = async (stockURL, stockId) => {
 
     const browser = await puppeteer.launch(LAUNCH_PUPPETEER_OPTS);
     const page = await browser.newPage();
-    const page2 = await browser.newPage();
 
     await page.setDefaultNavigationTimeout(0);
-    await page2.setDefaultNavigationTimeout(0);
 
     let stockObject = {};
 
@@ -35,10 +33,6 @@ const stockScraper = async (stockURL, stockId) => {
 
         await page.goto(stockURL, PAGE_PUPPETEER_OPTS);
         await page.setViewport({ width: 1200, height: 800 });
-
-        await page2.goto(URLS.dividendURL, PAGE_PUPPETEER_OPTS);
-        await page2.setViewport({ width: 1200, height: 800 });
-
 
         const investingObject = await page.evaluate((stockURL, stockId) => {
 
@@ -76,15 +70,17 @@ const stockScraper = async (stockURL, stockId) => {
             };
         }, stockURL, stockId);
 
-        //await page.goto(URLS.dividendURL, PAGE_PUPPETEER_OPTS);
-        //await page.setViewport({ width: 1200, height: 800 });
+        await page.goto(URLS.dividendURL, PAGE_PUPPETEER_OPTS);
+        await page.setViewport({ width: 1200, height: 800 });
 
-        await page2.type('#sponsored-search-typeahead', investingObject.ticker);
-        await page2.click('body > header.n-header.t-w-full.t-container.t-mx-auto > div.t-flex.t-items-center > section > form > button');
+        await page.type('#sponsored-search-typeahead', investingObject.ticker);
+        await page.click('body > header.n-header.t-w-full.t-container.t-mx-auto > div.t-flex.t-items-center > section > form > button');
 
-        await page2.waitForNavigation();
+        await page.waitForNavigation({timeout: 10000}).catch(() =>
+            console.log('CANT OPEN DIVIDEND PAGE FOR COMPANY')
+        );
 
-        const dividendObject = await page2.evaluate(() => {
+        const dividendObject = await page.evaluate(() => {
 
             const dividendYieldSelector = '#stock-dividend-data > section > div:nth-child(1) > p';
             const annualizedPayoutSelector = '#stock-dividend-data > section > div:nth-child(2) > p';
@@ -101,12 +97,13 @@ const stockScraper = async (stockURL, stockId) => {
 
             return {
                 industry: industry,
-                dividendYield: dividendYield ? dividendYield : '',
-                annualizedPayout: annualizedPayout ? annualizedPayout : '',
-                payoutRatio: payoutRatio ? payoutRatio : '' ,
-                dividendGrowth: dividendGrowth ? dividendGrowth : '',
+                dividendYield: dividendYield,
+                annualizedPayout: annualizedPayout,
+                payoutRatio: payoutRatio,
+                dividendGrowth: dividendGrowth,
             };
         });
+
 
         stockObject = {...investingObject, ...dividendObject};
 

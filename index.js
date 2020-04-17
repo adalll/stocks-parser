@@ -38,7 +38,6 @@ mongoose.connect('mongodb+srv://stockUser:stockUser1617@stocks-qywnv.mongodb.net
                     console.log('LAST COMPANY PARSING & SAVING TIME: ', (Date.now() - startCompanyTime) / 1000, 's');
                     console.log('TOTAL PARSED: ', i+1);
                 }
-
                 console.log('TOTAL TIME: ', (Date.now() - startTime) / 1000, 's');
             })
             .catch(console.error);
