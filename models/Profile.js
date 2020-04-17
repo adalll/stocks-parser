@@ -47,11 +47,15 @@ const profileSchema = new Schema({
         type: String,
         required: true
     },
-// DIVIDEND.COM DATA
     industry: {
         type: String,
         required: true
     },
+    sector: {
+        type: String,
+        required: true
+    },
+// DIVIDEND.COM DATA
     dividendYield: {
         type: String,
         required: true
