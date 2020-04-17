@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const URLS = require('./data/URLS');
 
 const LAUNCH_PUPPETEER_OPTS = {
-    headless: false,
+    headless: true,
     ignoreHTTPSErrors: true,
     args: [
         '--no-sandbox',
