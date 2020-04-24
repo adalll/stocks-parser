@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 const URLS = require('./data/URLS');
 
 const LAUNCH_PUPPETEER_OPTS = {
@@ -84,7 +85,7 @@ const stockScraper = async (stockURL, stockId) => {
         await page.type('#sponsored-search-typeahead', investingObject.ticker);
         await page.click('body > header.n-header.t-w-full.t-container.t-mx-auto > div.t-flex.t-items-center > section > form > button');
 
-        await page.waitForNavigation({timeout: 10000}).catch(() =>
+        await page.waitForNavigation({timeout: 5000}).catch(() =>
             console.log('CANT OPEN DIVIDEND PAGE FOR COMPANY')
         );
 
@@ -94,8 +95,6 @@ const stockScraper = async (stockURL, stockId) => {
             const annualizedPayoutSelector = '#stock-dividend-data > section > div:nth-child(2) > p';
             const payoutRatioSelector = '#stock-dividend-data > section > div:nth-child(4) > p';
             const dividendGrowthSelector = '#stock-dividend-data > section > div:nth-child(5) > p';
-
-
 
             const dividendYield = document.querySelector(dividendYieldSelector) ? document.querySelector(dividendYieldSelector).innerText : '';
             const annualizedPayout = document.querySelector(annualizedPayoutSelector) ? document.querySelector(annualizedPayoutSelector).innerText : '';
@@ -112,7 +111,39 @@ const stockScraper = async (stockURL, stockId) => {
         });
 
 
-        stockObject = {...investingObject, ...dividendObject};
+        await page.goto('https://www.tinkoff.ru/invest/stocks/' + investingObject.ticker, PAGE_PUPPETEER_OPTS);
+        await page.setViewport({ width: 1200, height: 800 });
+
+        //await page.type('body > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > input', investingObject.company);
+        //await page.keyboard.press('Enter');
+        await page.waitForNavigation({timeout: 5000}).catch(() =>
+            console.log('CANT OPEN TINKOFF PAGE FOR COMPANY')
+        );
+
+        const tinkoffObject = await page.evaluate(() => {
+
+            const logoSelector = 'body > div.application > div > div > div > div.PortalContainer__container_1jUdq > div.UILayoutPage__page_1gFPc > div:nth-child(1) > div.PlatformLayout__layoutPageComponent_M16bJ > div > div > div > div > div > div > div > div > div > div > span';
+
+            let logoLink = document.querySelector(logoSelector) ? document.querySelector(logoSelector).style.backgroundImage : '';
+
+            if (logoLink) { logoLink = 'http://' + logoLink.match(/\("\/\/(.*)"\)/)[1];}
+
+            return {
+                logoLink: logoLink,
+            };
+        });
+
+
+        var viewSource = await page.goto(tinkoffObject.logoLink);
+        await fs.writeFile("./logos/" + investingObject.ticker + ".png", await viewSource.buffer(), function(err) {
+            if(err) {
+                return console.log('SAVING LOGO FAILED: ', err);
+            }
+            console.log("LOGO SAVED SUCCESSFULLY!");
+        });
+
+
+        stockObject = {...investingObject, ...dividendObject, ...tinkoffObject};
 
     } catch (err) {
         console.log('STOCK SCRAPPING ERROR: ', err);
